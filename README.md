@@ -153,7 +153,7 @@ python mkcdi_gui.py      # GUI version
    - For best results, provide a proper IP.BIN from your source image
 
 3. **Emulator doesn't start**
-   - Verify redream.exe is in the `redream/` directory
+   - Verify redream.exe is in the `emulator/` directory
    - Ensure you have a proper BIOS file (boot.bin)
 
 4. **Image doesn't boot**
