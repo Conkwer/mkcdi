@@ -32,4 +32,8 @@ Components with historical/unknown licensing, included under the presumption of 
 Legacy Binaries (provided for historical compatibility, use the Python versions above instead):
 *   The original hack4.exe and BinPATCH.exe are legacy tools with unknown licensing terms.
 
+This software generates IP.BIN files for Dreamcast discs. 
+These generated files are considered functional, non-creative data necessary for hardware initialization. 
+The generated IP.BIN files are not covered by the GPL license and are provided as-is for the sole purpose of interoperability with SEGA Dreamcast hardware.
+
 This software is provided for educational and preservation purposes only. The authors are not responsible for any misuse.
