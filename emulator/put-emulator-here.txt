@@ -1,0 +1,15 @@
+Put an emulator here so you can run it from the GUI
+
+examples:
+
+.\emulator\redream.exe
+.\emulator\redream.key
+.\emulator\boot.bin
+
+other emulators also can be used:
+
+.\emulator\emulator.exe
+or
+.\emulator\demul.exe
+or
+.\emulator\flycast.exe
