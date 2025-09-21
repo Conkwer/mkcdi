@@ -25,6 +25,7 @@ For mastering a final CD-R release, you should use a full-featured toolchain lik
 
 ## Directory Structure
 
+```text
 ./
 ├── archive/          # Stores previous CDI builds
 ├── data/             # Place game files here (extracted from GDI/CDI)
@@ -41,6 +42,7 @@ For mastering a final CD-R release, you should use a full-featured toolchain lik
 ├── mkcdi_gui.py      # Python source (GUI)
 ├── settings.ini      # Configuration file
 └── info.txt          # This file
+```
 
 ## Installation
 
