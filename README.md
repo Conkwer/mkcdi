@@ -12,7 +12,7 @@ For mastering a final CD-R release, you should use a full-featured toolchain lik
 - **Dual Interface**: Choose between powerful command-line control or user-friendly GUI
 - **Automatic Binary Detection**: Automatically detects 1ST_READ.BIN, 0WINCEOS.BIN, or 1NOSDC.BIN
 - **LBA Support**: Configurable LBA values (like 11702 and 45000)
-- **IP.BIN Handling**: Automatic IP.BIN creation and patching
+- **IP.BIN Handling**: Automatic IP.BIN patching
 - **Emulator Integration**: Built-in support for Redream emulator testing
 - **Archive Management**: Automatically organizes previous builds
 - **Noob Mode**: Simplified one-click building for beginners
