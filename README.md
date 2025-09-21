@@ -170,9 +170,26 @@ python mkcdi_gui.py      # GUI version
 
 This toolchain combines various open-source and custom tools to provide a complete Dreamcast image building solution. Special thanks to the Dreamcast homebrew community for their ongoing efforts.
 
+## Legal (IP.BIN and Game Files)
+
+*   The **IP.BIN** files created by this tool are generated from generic templates or code written by the homebrew community.
+*   To build an image, you must provide your own game files (e.g., `1ST_READ.BIN`, `IP.BIN` and data files) from a legally sourced copy of a game.
+*   This tool is intended for **preservation, education, and homebrew development** only. You must own the original games to use this software legally.
+
+## License
+
+MkCDI is licensed under the **GNU General Public License v3.0**.
+
+This means you are free to use, modify, and distribute this software, provided you:
+1.  Disclose your source code if you distribute modified versions.
+2.  Use the same license (GPLv3) for your distributed work.
+
+The project incorporates and reimplements tools from the Dreamcast homebrew community, originally released under GPL-compatible terms. See the `LICENSE` file for full details and component attribution.
+
 ## Disclaimer
 
 This software is provided for educational and preservation purposes. You must own the original games to use this software legally. The authors are not responsible for any misuse of this software.
+
 
 ---
 
