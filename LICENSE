@@ -1,11 +1,35 @@
-## License
+MkCDI: Fast Dreamcast Image Builder
+Copyright (C) 2025 [Yoru_Enoshima/Conkwer]
 
-MkCDI is licensed under the **GNU General Public License v3.0**.
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-This means you are free to use, modify, and distribute this software, provided you:
-1.  Disclose your source code if you distribute modified versions.
-2.  Use the same license (GPLv3) for your distributed work.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-The project incorporates and reimplements tools from the Dreamcast homebrew community, originally released under GPL-compatible terms. See the `LICENSE` file for full details and component attribution.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-**Disclaimer:** This software is provided for educational and preservation purposes. You must own the original games to use this software legally. The authors are not responsible for any misuse.
+---
+**Component Attribution and Licensing**
+
+This toolchain is a combination of original works, reimplementations, and legacy tools from the Dreamcast homebrew community.
+
+Core Components licensed under GNU GPL:
+*   bincon.c (dopefish, Shoometsu) - Original GPL
+*   binhack32.exe source (FamilyGuy, SiZiOUS) - GPLv3
+*   bincon.py, binhack.py - Conkwer - GPLv3 (Reimplementations of the above to Python)
+*   date.cpp, logo.cpp, mkcdi.py, mkcdi_gui.py - Conkwer (Yoru_Enoshima) - GPLv3 (Original code)
+
+Components with historical/unknown licensing, included under the presumption of permissive community use:
+*   hack4.py - GPLv3 (Experimental reimplementation. The original hack4.exe is a legacy tool with unknown license).
+*   iso2cdi.py - with custom LBA improvements and GUI integration - GPLv3 (improvements of a small script found online. The original script's license was unspecified).
+
+Legacy Binaries (provided for historical compatibility, use the Python versions above instead):
+*   The original hack4.exe and BinPATCH.exe are legacy tools with unknown licensing terms.
+
+This software is provided for educational and preservation purposes only. The authors are not responsible for any misuse.
