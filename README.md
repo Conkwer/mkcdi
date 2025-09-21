@@ -23,6 +23,9 @@ For mastering a final CD-R release, you should use a full-featured toolchain lik
 - Python 3.8+ (for source version)
 - Dreamcast game files (extracted from GDI/CDI)
 
+<img width="376" height="398" alt="screenshot" src="https://github.com/user-attachments/assets/e76a376b-0063-4d50-a0a2-b8ad0b9401e1" />
+
+
 ## Directory Structure
 
 ```text
@@ -172,4 +175,5 @@ This toolchain combines various open-source and custom tools to provide a comple
 This software is provided for educational and preservation purposes. You must own the original games to use this software legally. The authors are not responsible for any misuse of this software.
 
 ---
+
 *Test Build, 20250922; from International Dreamcast homebrew community*
