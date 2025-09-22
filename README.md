@@ -5,7 +5,7 @@
 Dreamcast Image Builder is a tool (or a compact toolchain, if one prefers to call it that) for creating bootable Dreamcast CDI images from game data files. This release provides both a command-line script (mkcdi.cmd) and a GUI (mkcdi_gui.exe) for building images with the correct LBA settings and IP.BIN configuration.
 
 This tool builds images suitable for testing, bypassing ECC/EDC generation for speed,
-For mastering a final CD-R release, you should use a full-featured toolchain like LazyBoot whatever that have a proper dummy support, data/data mode and ECC.
+For mastering a final CD-R release, you should use a full-featured toolchain like LazyBoot whatever that have a proper dummy support, **CDDA**, data/data mode and ECC.
 
 ## Features
 
