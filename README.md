@@ -1,4 +1,4 @@
-# MkCDI: Fast Dreamcast Image Builder
+# MkCDI: **Fast** Dreamcast Image Builder
 
 ## Overview
 
@@ -194,3 +194,4 @@ This software is provided for educational and preservation purposes. You must ow
 ---
 
 *Test Build, 20250922; from International Dreamcast homebrew community*
+
