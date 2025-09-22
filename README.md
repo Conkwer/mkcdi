@@ -7,7 +7,7 @@ Dreamcast Image Builder is a tool (or a compact toolchain, if one prefers to cal
 This tool builds images suitable for testing, bypassing ECC/EDC generation for speed,
 For mastering a final CD-R release, you should use a full-featured toolchain like LazyBoot whatever that have a proper dummy support, **CDDA**, data/data mode and ECC.
 
-From translators, for translators. The toolchain's main purpose is to build images FAST, without bells and whistles. Useful for game translators who need to test over and over again. It doesn't clutter the image with crap like "made with program X", unlike cdi4dc or Redump2cdi.
+From translators, for translators. The toolchain's main purpose is to build images FAST, without bells and whistles. Useful for game translators who need to test over and over again.
 
 ## Features
 
@@ -196,6 +196,7 @@ This software is provided for educational and preservation purposes. You must ow
 ---
 
 *Test Build, 20250922; from International Dreamcast homebrew community*
+
 
 
 
