@@ -9,6 +9,8 @@ import time
 import tkinter as tk
 from tkinter import ttk, messagebox
 import re
+import glob
+import ctypes
 
 # Global variable to control the spinner
 spinner_running = False
@@ -18,6 +20,8 @@ class DreamcastImageBuilder:
         self.application_path = self._get_application_path()
         self.config_path = os.path.join(self.application_path, 'settings.ini')
         self.emulator_path = 'emulator/emulator.exe'  # Default emulator path
+        self.is_elf = False  # Track if we're building from ELF
+        self.enable_hidpi()
         self.setup_gui()
         self.load_settings()
 
@@ -25,10 +29,49 @@ class DreamcastImageBuilder:
     def _get_application_path() -> str:
         return os.path.dirname(sys.executable) if getattr(sys, 'frozen', False) else os.path.dirname(os.path.abspath(__file__))
 
+    def enable_hidpi(self):
+        """Enable HiDPI support for Windows 10/11"""
+        if sys.platform == 'win32':
+            try:
+                # Tell Windows this app is DPI aware
+                ctypes.windll.shcore.SetProcessDpiAwareness(1)  # PROCESS_SYSTEM_DPI_AWARE
+            except Exception:
+                try:
+                    # Fallback for older Windows versions
+                    ctypes.windll.user32.SetProcessDPIAware()
+                except Exception:
+                    pass
+
     def setup_gui(self):
         self.root = tk.Tk()
         self.root.title("Dreamcast Image Builder")
-        self.root.geometry("360x360")  # Reduced height
+        
+        # Get screen scaling factor
+        self.scaling_factor = self.root.winfo_fpixels('1i') / 96.0
+        
+        # Adjust window size based on DPI
+        base_width = 380
+        base_height = 380
+        window_width = int(base_width * min(self.scaling_factor, 1.5))
+        window_height = int(base_height * min(self.scaling_factor, 1.5))
+        
+        self.root.geometry(f"{window_width}x{window_height}")
+        
+        # Set minimum window size
+        self.root.minsize(int(360 * min(self.scaling_factor, 1.5)), 
+                         int(360 * min(self.scaling_factor, 1.5)))
+        
+        # Configure default font size based on scaling
+        default_font_size = 9  # Keep original size
+        self.default_font = ('Segoe UI', default_font_size)
+        self.root.option_add('*Font', self.default_font)
+        
+        # Configure ttk styles for better HiDPI rendering
+        style = ttk.Style()
+        style.theme_use('vista' if sys.platform == 'win32' else 'clam')
+        
+        # Adjust padding for HiDPI
+        self.base_padding = int(5 * min(self.scaling_factor, 1.3))
         
         # Initialize variables
         self.lba_var = tk.StringVar(value="11702")
@@ -42,49 +85,60 @@ class DreamcastImageBuilder:
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
     def create_widgets(self):
-        # Main frame with reduced padding
-        main_frame = ttk.Frame(self.root, padding="5")
+        # Main frame with DPI-aware padding
+        main_frame = ttk.Frame(self.root, padding=str(self.base_padding))
         main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
         
-        # Create a more compact layout
+        # Calculate padding values
+        pady_small = max(2, int(2 * min(self.scaling_factor, 1.3)))
+        pady_medium = max(5, int(5 * min(self.scaling_factor, 1.3)))
+        pady_large = max(10, int(10 * min(self.scaling_factor, 1.3)))
+        padx_medium = max(5, int(5 * min(self.scaling_factor, 1.3)))
+        padx_checkbox = max(10, int(10 * min(self.scaling_factor, 1.3)))
+        
+        # Calculate entry widths based on scaling
+        lba_width = max(10, int(10 * min(self.scaling_factor, 1.2)))
+        binary_width = max(15, int(15 * min(self.scaling_factor, 1.2)))
+        volume_width = max(20, int(20 * min(self.scaling_factor, 1.2)))
+        
         row = 0
         
         # LBA setting
-        ttk.Label(main_frame, text="LBA:").grid(row=row, column=0, sticky=tk.W, pady=2)
-        self.lba_entry = ttk.Entry(main_frame, textvariable=self.lba_var, width=10)
-        self.lba_entry.grid(row=row, column=1, sticky=(tk.W, tk.E), pady=2, padx=5)
+        ttk.Label(main_frame, text="LBA:").grid(row=row, column=0, sticky=tk.W, pady=pady_small)
+        self.lba_entry = ttk.Entry(main_frame, textvariable=self.lba_var, width=lba_width)
+        self.lba_entry.grid(row=row, column=1, sticky=(tk.W, tk.E), pady=pady_small, padx=padx_medium)
         row += 1
         
         # Binary setting
-        ttk.Label(main_frame, text="Binary:").grid(row=row, column=0, sticky=tk.W, pady=2)
-        self.binary_entry = ttk.Entry(main_frame, textvariable=self.binary_var, width=15)
-        self.binary_entry.grid(row=row, column=1, sticky=(tk.W, tk.E), pady=2, padx=5)
+        ttk.Label(main_frame, text="Binary:").grid(row=row, column=0, sticky=tk.W, pady=pady_small)
+        self.binary_entry = ttk.Entry(main_frame, textvariable=self.binary_var, width=binary_width)
+        self.binary_entry.grid(row=row, column=1, sticky=(tk.W, tk.E), pady=pady_small, padx=padx_medium)
         row += 1
         
         # Volume name setting
-        ttk.Label(main_frame, text="Volume:").grid(row=row, column=0, sticky=tk.W, pady=2)
-        self.volume_entry = ttk.Entry(main_frame, textvariable=self.volume_var, width=20)
-        self.volume_entry.grid(row=row, column=1, sticky=(tk.W, tk.E), pady=2, padx=5)
+        ttk.Label(main_frame, text="Volume:").grid(row=row, column=0, sticky=tk.W, pady=pady_small)
+        self.volume_entry = ttk.Entry(main_frame, textvariable=self.volume_var, width=volume_width)
+        self.volume_entry.grid(row=row, column=1, sticky=(tk.W, tk.E), pady=pady_small, padx=padx_medium)
         row += 1
         
         # Checkboxes - centered
         checkbox_frame = ttk.Frame(main_frame)
-        checkbox_frame.grid(row=row, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=5)
+        checkbox_frame.grid(row=row, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=pady_medium)
         
         binhack_check = ttk.Checkbutton(checkbox_frame, text="Enable Binhack", 
                                        variable=self.enable_binhack_var)
-        binhack_check.grid(row=0, column=0, padx=(0, 10))
+        binhack_check.grid(row=0, column=0, padx=(0, padx_checkbox))
         
         emulator_check = ttk.Checkbutton(checkbox_frame, text="Run Emulator", 
                                         variable=self.enable_emulator_var)
-        emulator_check.grid(row=0, column=1, padx=(0, 10))
+        emulator_check.grid(row=0, column=1, padx=(0, padx_checkbox))
         
         noob_check = ttk.Checkbutton(checkbox_frame, text="Noob Mode", 
                                     variable=self.noob_mode_var,
                                     command=self.toggle_noob_mode)
         noob_check.grid(row=0, column=2)
         
-        # Center the checkboxes by configuring the checkbox_frame columns
+        # Center the checkboxes
         checkbox_frame.columnconfigure(0, weight=1)
         checkbox_frame.columnconfigure(1, weight=1)
         checkbox_frame.columnconfigure(2, weight=1)
@@ -92,35 +146,40 @@ class DreamcastImageBuilder:
         
         # Build button centered
         self.build_button = ttk.Button(main_frame, text="Build Image", command=self.start_build_thread)
-        self.build_button.grid(row=row, column=0, columnspan=2, pady=10)
+        self.build_button.grid(row=row, column=0, columnspan=2, pady=pady_large)
         row += 1
         
-        # Status row - label on left, status text on right
+        # Status row
         status_frame = ttk.Frame(main_frame)
-        status_frame.grid(row=row, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=2)
+        status_frame.grid(row=row, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=pady_small)
         
-        # Status label on left
         ttk.Label(status_frame, text="Status:").grid(row=0, column=0, sticky=tk.W)
         
-        # Status text and spinner on right
         right_frame = ttk.Frame(status_frame)
         right_frame.grid(row=0, column=1, sticky=tk.E)
         
-        self.spinner_label = ttk.Label(right_frame, text="", width=3)
+        spinner_width = max(3, int(3 * min(self.scaling_factor, 1.2)))
+        self.spinner_label = ttk.Label(right_frame, text="", width=spinner_width)
         self.spinner_label.grid(row=0, column=0, sticky=tk.W)
         
         self.progress_label = ttk.Label(right_frame, text="Ready")
         self.progress_label.grid(row=0, column=1, sticky=tk.W)
         
-        # Configure weights for proper alignment
         status_frame.columnconfigure(1, weight=1)
         row += 1
         
-        # Status text area
-        self.status_text = tk.Text(main_frame, height=10, width=50)
-        self.status_text.grid(row=row, column=0, columnspan=2, sticky=(tk.W, tk.E, tk.N, tk.S), pady=2)
+        # Status text area with DPI-aware dimensions
+        text_height = max(10, int(10 * min(self.scaling_factor, 1.2)))
+        text_width = max(50, int(50 * min(self.scaling_factor, 1.2)))
         
-        # Scrollbar for status text
+        # Create font for text widget
+        text_font_size = max(9, int(9 * min(self.scaling_factor, 1.2)))
+        text_font = ('Consolas', text_font_size) if sys.platform == 'win32' else ('Courier', text_font_size)
+        
+        self.status_text = tk.Text(main_frame, height=text_height, width=text_width, font=text_font)
+        self.status_text.grid(row=row, column=0, columnspan=2, sticky=(tk.W, tk.E, tk.N, tk.S), pady=pady_small)
+        
+        # Scrollbar
         scrollbar = ttk.Scrollbar(main_frame, orient=tk.VERTICAL, command=self.status_text.yview)
         scrollbar.grid(row=row, column=2, sticky=(tk.N, tk.S))
         self.status_text['yscrollcommand'] = scrollbar.set
@@ -181,12 +240,12 @@ class DreamcastImageBuilder:
         config = configparser.ConfigParser()
         config['SETTINGS'] = {
             'lba': '11702',
-            'binary': '0WINCEOS.BIN',
+            'binary': '1ST_READ.BIN',
             'volume': 'mygame',
             'enable_emulator': '0',
             'enable_binhack': '1',
             'noob_mode': '0',
-            'emulator_path': 'emulator/emulator.exe'  # Default emulator path
+            'emulator_path': 'emulator/emulator.exe'
         }
         with open(self.config_path, 'w') as f:
             config.write(f)
@@ -198,14 +257,13 @@ class DreamcastImageBuilder:
         config = configparser.ConfigParser()
         config.read(self.config_path)
         self.lba_var.set(config.get('SETTINGS', 'lba', fallback='11702'))
-        self.binary_var.set(config.get('SETTINGS', 'binary', fallback='0WINCEOS.BIN'))
+        self.binary_var.set(config.get('SETTINGS', 'binary', fallback='1ST_READ.BIN'))
         self.volume_var.set(config.get('SETTINGS', 'volume', fallback='mygame'))
         self.enable_emulator_var.set(config.getboolean('SETTINGS', 'enable_emulator', fallback=False))
         self.enable_binhack_var.set(config.getboolean('SETTINGS', 'enable_binhack', fallback=True))
         self.noob_mode_var.set(config.getboolean('SETTINGS', 'noob_mode', fallback=False))
         self.emulator_path = config.get('SETTINGS', 'emulator_path', fallback='emulator/emulator.exe')
         
-        # Apply noob mode settings if enabled
         if self.noob_mode_var.get():
             self.toggle_noob_mode()
 
@@ -224,8 +282,6 @@ class DreamcastImageBuilder:
             config.write(f)
 
     def find_emulator(self):
-        """Find an available emulator, checking user-specified path first, then common emulators"""
-        # Check if user-specified emulator exists and is a file (not directory)
         if os.path.exists(self.emulator_path) and os.path.isfile(self.emulator_path):
             self.log_message(f"Using user-specified emulator: {self.emulator_path}")
             return self.emulator_path
@@ -233,20 +289,12 @@ class DreamcastImageBuilder:
         self.log_message(f"User-specified emulator not found: {self.emulator_path}")
         self.log_message("Searching for common Dreamcast emulators...")
         
-        # List of common Dreamcast emulators to check (in order of preference)
         common_emulators = [
-            'redream.exe',        # Windows
-            'Redream.exe',        # Windows (alternate capitalization)
-            'redream',            # Linux
-            'emulator.exe',       # Windows (generic)
-            'emulator',           # Linux (generic)
-            'demul.exe',          # Windows
-            'flycast.exe',        # Windows
-            'Flycast.exe',        # Windows (alternate capitalization)
-            'flycast'             # Linux
+            'redream.exe', 'Redream.exe', 'redream',
+            'emulator.exe', 'emulator',
+            'demul.exe', 'flycast.exe', 'Flycast.exe', 'flycast'
         ]
         
-        # Check in emulator directory first (if it exists)
         emulator_dir = 'emulator'
         if os.path.exists(emulator_dir) and os.path.isdir(emulator_dir):
             for emulator in common_emulators:
@@ -255,16 +303,13 @@ class DreamcastImageBuilder:
                     self.log_message(f"Found emulator: {emulator_path}")
                     return emulator_path
         
-        # Check in current directory as fallback
         for emulator in common_emulators:
             if os.path.exists(emulator) and os.path.isfile(emulator):
                 self.log_message(f"Found emulator: {emulator}")
                 return emulator
         
-        # No emulator found - provide helpful message
         self.log_message("ERROR: No emulator found!")
-        self.log_message("Please place an emulator binary (redream, flycast, demul, etc.)")
-        self.log_message("in the 'emulator' directory or specify the path in settings.ini")
+        self.log_message("Please place an emulator binary in the 'emulator' directory")
         return None
 
     def run_command(self, cmd, check=True):
@@ -274,18 +319,90 @@ class DreamcastImageBuilder:
         except subprocess.CalledProcessError as e:
             return False, e.stdout, e.stderr
 
+    def convert_elf_to_binary(self, elf_file, settings):
+        self.log_message(f"ELF binary detected: {os.path.basename(elf_file)}")
+        self.log_message("KOS homebrew mode - converting ELF to 1ST_READ.BIN")
+        
+        objcopy_path = os.path.join('system', 'sh-elf-objcopy.exe')
+        scramble_path = os.path.join('system', 'scramble.exe')
+        
+        if not os.path.exists(objcopy_path):
+            self.log_message(f"ERROR: {objcopy_path} not found!")
+            return False
+        if not os.path.exists(scramble_path):
+            self.log_message(f"ERROR: {scramble_path} not found!")
+            return False
+        
+        unscrambled_path = os.path.join('data', 'unscrambled.bin')
+        output_path = os.path.join('data', '1ST_READ.BIN')
+        
+        self.log_message("Converting ELF to binary format...")
+        success, stdout, stderr = self.run_command(
+            f'"{objcopy_path}" -O binary "{elf_file}" "{unscrambled_path}"',
+            check=False
+        )
+        
+        if not success or not os.path.exists(unscrambled_path):
+            self.log_message(f"ERROR: Failed to convert ELF to binary: {stderr}")
+            return False
+        
+        self.log_message("Scrambling binary...")
+        success, stdout, stderr = self.run_command(
+            f'"{scramble_path}" "{unscrambled_path}" "{output_path}"',
+            check=False
+        )
+        
+        if os.path.exists(unscrambled_path):
+            os.remove(unscrambled_path)
+        
+        if not success or not os.path.exists(output_path):
+            self.log_message(f"ERROR: Failed to scramble binary: {stderr}")
+            return False
+        
+        if os.path.exists(output_path):
+            os.remove(elf_file)
+            self.log_message("Conversion successful - created 1ST_READ.BIN")
+        
+        settings['binary'] = '1ST_READ.BIN'
+        self.is_elf = True
+        
+        kos_ipbin = os.path.join('system', 'precon', 'kos.bin')
+        if os.path.exists(kos_ipbin):
+            shutil.copy2(kos_ipbin, 'data/IP.BIN')
+            self.log_message("Using KOS-compatible IP.BIN")
+        else:
+            self.log_message("WARNING: kos.bin not found in system/precon/")
+        
+        return True
+
     def verification(self, settings):
         self.log_message("Verifying files and patching binaries...")
         if not os.path.exists('data'):
             os.makedirs('data')
         
-        # Check if user-specified binary exists
+        self.is_elf = False
+        
+        elf_files = glob.glob('data/*.elf')
+        
+        if len(elf_files) > 1:
+            self.log_message("ERROR: Multiple ELF files detected!")
+            self.log_message("Please keep only ONE .elf file in the data folder")
+            self.log_message("")
+            self.log_message("Found ELF files:")
+            for elf in elf_files:
+                self.log_message(f"  - {os.path.basename(elf)}")
+            return False
+        
+        if len(elf_files) == 1:
+            if not self.convert_elf_to_binary(elf_files[0], settings):
+                return False
+            return True
+        
         user_binary = settings['binary']
         if user_binary and os.path.exists(f'data/{user_binary}'):
             self.log_message(f"Found user-specified binary: {user_binary}")
             return True
         
-        # Auto-detect binary if user-specified one doesn't exist
         binary_files = ['1ST_READ.BIN', '0WINCEOS.BIN', '1NOSDC.BIN']
         found_binary = None
         for bfile in binary_files:
@@ -294,13 +411,11 @@ class DreamcastImageBuilder:
                 self.log_message(f"Found binary: {bfile}")
                 break
         
-        # If no binary found at all, stop the process
         if not found_binary:
             self.log_message("ERROR: No binary file found in data directory!")
-            self.log_message("Please place a binary file (1ST_READ.BIN, 0WINCEOS.BIN, or 1NOSDC.BIN) in the data directory")
+            self.log_message("Please place a binary or .elf file in the data directory")
             return False
         
-        # Update settings with the found binary
         settings['binary'] = found_binary
         
         if os.name == 'nt':
@@ -322,6 +437,10 @@ class DreamcastImageBuilder:
         return True
 
     def binhack(self, settings):
+        if self.is_elf:
+            self.log_message("KOS homebrew detected - skipping binhack")
+            return
+        
         if not self.enable_binhack_var.get():
             self.log_message("Binhack disabled, skipping")
             return
@@ -370,30 +489,25 @@ class DreamcastImageBuilder:
         if os.path.exists('test.iso'):
             os.remove('test.iso')
         
-        # Generate final filename with timestamp (old version format)
         build = datetime.now().strftime("%Y%m%d-%H%M%S")
         final_filename = f"{settings['volume']}-{build}.cdi"
         temp_filename = f"{settings['volume']}-{build}.tmp"
         settings['build'] = build
         
-        # Create archive directory if it doesn't exist
         if not os.path.exists('archive'):
             os.makedirs('archive')
         
-        # Move any existing .cdi files to archive (except image.cdi)
         for file in os.listdir('.'):
             if file.endswith('.cdi') and file != 'image.cdi':
                 shutil.move(file, os.path.join('archive', file))
         
-        # Rename the newly created image
         if os.path.exists('image.cdi'):
             os.rename('image.cdi', temp_filename)
         
-        # Move the temp file to final filename
         if os.path.exists(temp_filename):
             os.rename(temp_filename, final_filename)
         
-        settings['cdi_file'] = final_filename  # store final output for emulator
+        settings['cdi_file'] = final_filename
         self.log_message(f'File "{final_filename}" is created.')
         return True
 
@@ -402,7 +516,6 @@ class DreamcastImageBuilder:
         if not self.enable_emulator_var.get():
             return
         
-        # Find an available emulator
         emulator_path = self.find_emulator()
         
         if not emulator_path:
@@ -455,12 +568,11 @@ class DreamcastImageBuilder:
         settings = self.validate_inputs()
         self.save_settings()
         
-        # Stop if no binary is found
         if not self.verification(settings):
             self.progress_label.config(text="Failed")
             self.stop_spinner()
-            self.log_message("Build process stopped - no binary file found")
-            return  # Add this return to exit the function
+            self.log_message("Build process stopped - verification failed")
+            return
         
         if self.enable_binhack_var.get():
             self.binhack(settings)
