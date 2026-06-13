@@ -1,4 +1,4 @@
-# MkCDI: Fast Dreamcast Image Builder
+# MkCDI: Fast Dreamcast Image Builder (beta)
 
 ## Overview
 
