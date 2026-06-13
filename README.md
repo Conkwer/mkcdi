@@ -9,7 +9,7 @@ For mastering a final CD-R release, you should use a full-featured toolchain lik
 
 From translators, for translators. The toolchain's main purpose is to build images FAST, without bells and whistles. Useful for game translators who need to test over and over again.  
 
-## Overview  
+## Notes  
 In development. Not all bug are fixed yet. Use "Lazyboot" if you need more tested solution.   
 
 ## Features
